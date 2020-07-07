@@ -954,9 +954,12 @@ static void  on_service_discovery_response(const ble_gattc_evt_t * const p_ble_g
 
             if(service->uuid.uuid == 0)
             {
-                ble_uuid128_t srvc_uuid128;
-                srvc_uuid128 = BLE_UUID_TYPE_VENDOR_BEGIN;
-                srvc_uuid128.uuid128 = p_ble_gattc_evt->params.attr_info_disc_rsp_info.attr_info128;
+                ble_uuid128_t srvc_uuid128;                
+                //srvc_uuid128.uuid128 = p_ble_gattc_evt->params.attr_info_disc_rsp_info.attr_info128;
+                for(int iUUID128 = 0; iUUID128 < 16; iUUID128++)
+                {
+                    srvc_uuid128.uuid128[iUUID128] = p_ble_gattc_evt->params.attr_info_disc_rsp_info.attr_info128[iUUID128];
+                }
                 printf("Discovered BATTERY service. UUID: 0x%32X, "
                        "start handle: 0x%04X, end handle: 0x%04X\n",
                        srvc_uuid128.uuid128, m_service_start_handle, m_service_end_handle);
