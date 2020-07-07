@@ -958,7 +958,7 @@ static void  on_service_discovery_response(const ble_gattc_evt_t * const p_ble_g
                 //srvc_uuid128.uuid128 = p_ble_gattc_evt->params.attr_info_disc_rsp_info.attr_info128;
                 for(int iUUID128 = 0; iUUID128 < 16; iUUID128++)
                 {
-                    srvc_uuid128.uuid128[iUUID128] = p_ble_gattc_evt->params.attr_info_disc_rsp_info.attr_info128[iUUID128];
+                    srvc_uuid128.uuid128[iUUID128] = p_ble_gattc_evt->params.attr_info_disc_rsp.info.attr_info128.uuid.uuid128[iUUID128];
                 }
                 printf("Discovered BATTERY service. UUID: 0x%32X, "
                        "start handle: 0x%04X, end handle: 0x%04X\n",
@@ -1117,6 +1117,7 @@ static void on_characteristic_discovery_response(const ble_gattc_evt_t * const p
             m_hid_char_handle = p_ble_gattc_evt->params.char_disc_rsp.chars[i].handle_decl;
             
         }
+        descr_discovery_start();
         //m_service_end_handle = p_ble_gattc_evt->params.char_disc_rsp.chars[i].handle_decl
         //m_service_end_handle = p_ble_gattc_evt->params.char_disc_rsp.chars[i].handle_decl
         //m_service_end_handle = p_ble_gattc_evt->params.char_disc_rsp.chars[i].handle_decl
@@ -1135,7 +1136,7 @@ static void on_characteristic_discovery_response(const ble_gattc_evt_t * const p
         EnableHOGPNotice();
     }
 
-    descr_discovery_start();
+    //descr_discovery_start();
     //m_hrm_char_handle
     //m_service_end_handle
 }
