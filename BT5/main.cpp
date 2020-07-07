@@ -1212,7 +1212,7 @@ static void on_write_response(const ble_gattc_evt_t * const p_ble_gattc_evt)
 const char hexmap[] = {'0', '1', '2', '3', '4', '5', '6', '7',
                            '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
 
-std::string hexStr(const uint8_t *data, int len)
+static std::string hexStr(const uint8_t *data, int len)
 {
   std::string s(len * 2, ' ');
   for (int i = 0; i < len; ++i) {
@@ -1221,7 +1221,7 @@ std::string hexStr(const uint8_t *data, int len)
   }
   return s;
 }
-std::string hexStr(uint8_t *data, int len)
+static std::string hexStr(uint8_t *data, int len)
 {
   std::string s(len * 2, ' ');
   for (int i = 0; i < len; ++i) {
@@ -1262,7 +1262,7 @@ static void on_read_response(const ble_gattc_evt_t * const p_ble_gattc_evt)
             // Copy gathered 128bit UUID as future base.
             memcpy(uuidData, rsp_data, 16);
             //err_code = sd_ble_uuid_vs_add((const ble_uuid128_t *)&m_uuid128base, &m_uuid128base_type);
-            printf("Read UUID is %s\n", hexStr(uuidData, 16));
+            printf("Read UUID is %s\n", hexStr(uuidData, 16).c_str());
         }
 		//p_ble_gattc_evt->params
 
