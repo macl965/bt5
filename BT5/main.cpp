@@ -958,11 +958,18 @@ static void  on_service_discovery_response(const ble_gattc_evt_t * const p_ble_g
                 //srvc_uuid128.uuid128 = p_ble_gattc_evt->params.attr_info_disc_rsp_info.attr_info128;
                 for(int iUUID128 = 0; iUUID128 < 16; iUUID128++)
                 {
-                    srvc_uuid128.uuid128[iUUID128] = p_ble_gattc_evt->params.attr_info_disc_rsp.info.attr_info128.uuid.uuid128[iUUID128];
+                    srvc_uuid128.uuid128[iUUID128] = p_ble_gattc_evt->params.attr_info_disc_rsp.info.attr_info128->uuid.uuid128[iUUID128];
                 }
                 printf("Discovered BATTERY service. UUID: 0x%32X, "
                        "start handle: 0x%04X, end handle: 0x%04X\n",
                        srvc_uuid128.uuid128, m_service_start_handle, m_service_end_handle);
+                
+                if(service.uuid.type == sd_ble_gattc_char_value_by_uuid_read){
+                    uint32_t err_code = sd_ble_gattc_read(m_adapter, m_connection_handle, service.handle_range.start_handle, 0);
+                    if (err_code != NRF_SUCCESS) {
+                                return err_code;
+                            }
+                    }
             }
 
             if (service->uuid.uuid == BLE_UUID_BATTERY_SERVICE)
@@ -1201,6 +1208,18 @@ static void on_write_response(const ble_gattc_evt_t * const p_ble_gattc_evt)
  *
  * @param[in] p_ble_gattc_evt Read Response Event.
  */
+constexpr char hexmap[] = {'0', '1', '2', '3', '4', '5', '6', '7',
+                           '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+
+static std::string hexStr(uint8_t  *data, int len)
+{
+  std::string s(len * 2, ' ');
+  for (int i = 0; i < len; ++i) {
+    s[2 * i]     = hexmap[(data[i] & 0xF0) >> 4];
+    s[2 * i + 1] = hexmap[data[i] & 0x0F];
+  }
+  return s;
+}
 static uint8_t batteryLvlValue[1] = {0};
 static uint8_t readvalue[20] = {0};
 static void on_read_response(const ble_gattc_evt_t * const p_ble_gattc_evt)
@@ -1221,7 +1240,19 @@ static void on_read_response(const ble_gattc_evt_t * const p_ble_gattc_evt)
         //printf("Received battery lvl measurement: %d\n", batteryLvlValue[0]);
         //printf("Received battery lvl measurement: %d\n", batteryLvlValue[1]);
 
-		
+		// Response should contain full 128-bit UUID.
+        uint8_t * rsp_data    = (uint8_t *)p_ble_gattc_evt->evt.gattc_evt.params.read_rsp.data;
+        uint8_t rsp_data_len  = p_ble_gattc_evt->evt.gattc_evt.params.read_rsp.len;
+        if (rsp_data_len == 16) {
+            // Mask 16-bit UUID part to zeros.
+            //rsp_data[12] = 0x00;
+            //rsp_data[13] = 0x00;
+
+            // Copy gathered 128bit UUID as future base.
+            memcpy(p_ble_gattc_evt.uuid128, rsp_data, 16);
+            err_code = sd_ble_uuid_vs_add((const ble_uuid128_t *)&m_uuid128base, &m_uuid128base_type);
+            printf("Error. read operation failed. Error code %s\n", hexStr(rsp_data));
+        }
 		//p_ble_gattc_evt->params
 
 		if (p_ble_gattc_evt->params.read_rsp.handle == m_hrm_char_handle + 1)
