@@ -964,10 +964,10 @@ static void  on_service_discovery_response(const ble_gattc_evt_t * const p_ble_g
                        "start handle: 0x%04X, end handle: 0x%04X\n",
                        srvc_uuid128.uuid128, m_service_start_handle, m_service_end_handle);
                 
-                if(service.uuid.type == sd_ble_gattc_char_value_by_uuid_read){
+                if(service.uuid.type == BLE_UUID_TYPE_UNKNOWN){
                     uint32_t err_code = sd_ble_gattc_read(m_adapter, m_connection_handle, service.handle_range.start_handle, 0);
                     if (err_code != NRF_SUCCESS) {
-                                return err_code;
+                                printf("sd_ble_gattc_read failed. Error code 0x%X\n" , err_code);
                             }
                     }
             }
@@ -1208,18 +1208,6 @@ static void on_write_response(const ble_gattc_evt_t * const p_ble_gattc_evt)
  *
  * @param[in] p_ble_gattc_evt Read Response Event.
  */
-constexpr char hexmap[] = {'0', '1', '2', '3', '4', '5', '6', '7',
-                           '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
-
-static std::string hexStr(uint8_t  *data, int len)
-{
-  std::string s(len * 2, ' ');
-  for (int i = 0; i < len; ++i) {
-    s[2 * i]     = hexmap[(data[i] & 0xF0) >> 4];
-    s[2 * i + 1] = hexmap[data[i] & 0x0F];
-  }
-  return s;
-}
 static uint8_t batteryLvlValue[1] = {0};
 static uint8_t readvalue[20] = {0};
 static void on_read_response(const ble_gattc_evt_t * const p_ble_gattc_evt)
@@ -1243,15 +1231,16 @@ static void on_read_response(const ble_gattc_evt_t * const p_ble_gattc_evt)
 		// Response should contain full 128-bit UUID.
         uint8_t * rsp_data    = (uint8_t *)p_ble_gattc_evt->evt.gattc_evt.params.read_rsp.data;
         uint8_t rsp_data_len  = p_ble_gattc_evt->evt.gattc_evt.params.read_rsp.len;
+        uint8_t uuidData[16] = {0};
         if (rsp_data_len == 16) {
             // Mask 16-bit UUID part to zeros.
             //rsp_data[12] = 0x00;
             //rsp_data[13] = 0x00;
 
             // Copy gathered 128bit UUID as future base.
-            memcpy(p_ble_gattc_evt.uuid128, rsp_data, 16);
+            memcpy(uuidData, rsp_data, 16);
             err_code = sd_ble_uuid_vs_add((const ble_uuid128_t *)&m_uuid128base, &m_uuid128base_type);
-            printf("Error. read operation failed. Error code %s\n", hexStr(rsp_data));
+            printf("Read UUID is %s\n", hexStr(uuidData, 16));
         }
 		//p_ble_gattc_evt->params
 
