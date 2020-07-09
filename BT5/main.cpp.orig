@@ -776,7 +776,7 @@ static void on_pair(const ble_gap_evt_t *const p_ble_gap_evt)
     /*err_code = bsp_indication_set(BSP_INDICATE_CONNECTED);
     APP_ERROR_CHECK(err_code);*/
     uint16_t m_conn_handle = p_ble_gap_evt->conn_handle;
-    // 1连接一建立就发送安全请求，从而促使手机发送配对请求过�
+    // 1连接一建立就发送安全请求，从而促使手机发送配对请求过来
 
     ble_gap_sec_params_t params;
     params.bond = 0; // 1 to bond, 0 to pair?
@@ -905,6 +905,7 @@ static void on_timeout(const ble_gap_evt_t * const p_ble_gap_evt)
  *
  * @param[in] p_ble_gattc_evt Primary Service Discovery Response Event.
  */
+
 static void  on_service_discovery_response(const ble_gattc_evt_t * const p_ble_gattc_evt)
 {
     int count;
@@ -960,9 +961,9 @@ static void  on_service_discovery_response(const ble_gattc_evt_t * const p_ble_g
                 {
                     srvc_uuid128.uuid128[iUUID128] = p_ble_gattc_evt->params.attr_info_disc_rsp.info.attr_info128->uuid.uuid128[iUUID128];
                 }
-                printf("Discovered vender service. UUID: 0x%32X, "
+                printf("Discovered BATTERY service. UUID: 0x%32X, "
                        "start handle: 0x%04X, end handle: 0x%04X\n",
-                       srvc_uuid128.uuid128, service->handle_range.start_handle, m_service_end_handle);
+                       srvc_uuid128.uuid128, m_service_start_handle, m_service_end_handle);
                 
                 if(service->uuid.type == BLE_UUID_TYPE_UNKNOWN){
                     uint32_t err_code = sd_ble_gattc_read(m_adapter, m_connection_handle, service->handle_range.start_handle, 0);
@@ -1203,55 +1204,31 @@ static void on_write_response(const ble_gattc_evt_t * const p_ble_gattc_evt)
         fflush(stdout);
     }
 }
-/** Event dispatcher */
 
-/**@brief Function for handling the Application's BLE Stack events.
- *
- * @param[in] adapter The transport adapter.
- * @param[in] p_ble_evt Bluetooth stack event.
- */
-static void findMoreService()
-{
-    uint32_t error_code   = 0;
-    uint16_t start_handle = m_service_end_handle + 1;
-    error_code =
-        sd_ble_gattc_primary_services_discover(m_adapter, m_connection_handle, start_handle, NULL);
-    if (error_code != NRF_SUCCESS)
-    {
-        printf("fail to discover more services at start handle %04X!\n", start_handle);
-        fflush(stdout);
-    }
-    else
-    {
-        printf("find more service at start handle %04X!\n", start_handle);
-    }
-}
 /**@brief Function called on BLE_GATTC_EVT_READ_RSP event.
  *
  * @param[in] p_ble_gattc_evt Read Response Event.
  */
 const char hexmap[] = {'0', '1', '2', '3', '4', '5', '6', '7',
-                       '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+                           '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
 
 static std::string hexStr(const uint8_t *data, int len)
 {
-    std::string s(len * 2, ' ');
-    for (int i = 0; i < len; ++i)
-    {
-        s[2 * i]     = hexmap[(data[i] & 0xF0) >> 4];
-        s[2 * i + 1] = hexmap[data[i] & 0x0F];
-    }
-    return s;
+  std::string s(len * 2, ' ');
+  for (int i = 0; i < len; ++i) {
+    s[2 * i]     = hexmap[(data[i] & 0xF0) >> 4];
+    s[2 * i + 1] = hexmap[data[i] & 0x0F];
+  }
+  return s;
 }
 static std::string hexStr(uint8_t *data, int len)
 {
-    std::string s(len * 2, ' ');
-    for (int i = 0; i < len; ++i)
-    {
-        s[2 * i]     = hexmap[(data[i] & 0xF0) >> 4];
-        s[2 * i + 1] = hexmap[data[i] & 0x0F];
-    }
-    return s;
+  std::string s(len * 2, ' ');
+  for (int i = 0; i < len; ++i) {
+    s[2 * i]     = hexmap[(data[i] & 0xF0) >> 4];
+    s[2 * i + 1] = hexmap[data[i] & 0x0F];
+  }
+  return s;
 }
 static uint8_t batteryLvlValue[1] = {0};
 static uint8_t readvalue[20] = {0};
@@ -1286,8 +1263,6 @@ static void on_read_response(const ble_gattc_evt_t * const p_ble_gattc_evt)
             memcpy(uuidData, rsp_data, 16);
             //err_code = sd_ble_uuid_vs_add((const ble_uuid128_t *)&m_uuid128base, &m_uuid128base_type);
             printf("Read UUID is %s\n", hexStr(uuidData, 16).c_str());
-            if (m_service_end_handle < 0xFFFF)
-				findMoreService();
         }
 		//p_ble_gattc_evt->params
 
@@ -1441,7 +1416,28 @@ static void on_exchange_mtu_response(const ble_gattc_evt_t * const p_ble_gattc_e
 #endif
 
 
+/** Event dispatcher */
 
+/**@brief Function for handling the Application's BLE Stack events.
+ *
+ * @param[in] adapter The transport adapter.
+ * @param[in] p_ble_evt Bluetooth stack event.
+ */
+static void findMoreService()
+{    
+    uint32_t error_code = 0;
+    uint16_t start_handle = m_service_end_handle + 1;
+    error_code          = sd_ble_gattc_primary_services_discover(m_adapter, m_connection_handle, start_handle, NULL);
+    if (error_code != NRF_SUCCESS)
+    {
+        printf("fail to discover more services at start handle %04X!\n", start_handle);
+        fflush(stdout);
+    }
+    else
+    {
+        printf("find more service at start handle %04X!\n", start_handle);
+    }
+}
 static void ble_evt_dispatch(adapter_t * adapter, ble_evt_t * p_ble_evt)
 {
     if (p_ble_evt == NULL)
