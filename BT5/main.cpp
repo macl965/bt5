@@ -102,6 +102,7 @@ enum
 #define CONNECTION_SUPERVISION_TIMEOUT  MSEC_TO_UNITS(4000, UNIT_10_MS)  /**< Determines supervision time-out in units of 10 milliseconds. */
 
 #define TARGET_DEV_NAME "RemoteB029" /**< Connect to a peripheral using a given advertising name here. */
+const string sub_target_dev_name = "D4B8";
 #define MAX_PEER_COUNT 1            /**< Maximum number of peer's application intends to manage. */
 
 #define BLE_UUID_HEART_RATE_SERVICE          0x180D /**< Heart Rate service UUID. */
@@ -776,7 +777,7 @@ static void on_pair(const ble_gap_evt_t *const p_ble_gap_evt)
     /*err_code = bsp_indication_set(BSP_INDICATE_CONNECTED);
     APP_ERROR_CHECK(err_code);*/
     uint16_t m_conn_handle = p_ble_gap_evt->conn_handle;
-    // 1连接一建立就发送安全请求，从而促使手机发送配对请求过�
+    // 1连接一建立就发送安全请求，从而促使手机发送配对请求过�
 
     ble_gap_sec_params_t params;
     params.bond = 0; // 1 to bond, 0 to pair?
@@ -819,7 +820,7 @@ static void on_adv_report(const ble_gap_evt_t * const p_ble_gap_evt)
     n = sprintf(buffer, "0x%s\n", str);
     string deviceAddress = GetString(str);
     //1804ED207FBB   bt 412
-    if (deviceAddress.find("D4B8") != string::npos)
+    if (deviceAddress.find(sub_target_dev_name) != string::npos)
     {
         printf("target device address: 0x%s\n", str);
 	}
