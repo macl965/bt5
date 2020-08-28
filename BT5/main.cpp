@@ -1020,7 +1020,7 @@ static void on_pair(const ble_gap_evt_t *const p_ble_gap_evt)
     /*err_code = bsp_indication_set(BSP_INDICATE_CONNECTED);
     APP_ERROR_CHECK(err_code);*/
     uint16_t m_conn_handle = p_ble_gap_evt->conn_handle;
-    // 1Á¬½ÓÒ»½¨Á¢¾Í·¢ËÍ°²È«ÇëÇó£¬´Ó¶ø´ÙÊ¹ÊÖ»ú·¢ËÍÅä¶ÔÇëÇó¹ý?
+    // 1ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½Í·ï¿½ï¿½Í°ï¿½È«ï¿½ï¿½ï¿½ó£¬´Ó¶ï¿½ï¿½ï¿½Ê¹ï¿½Ö»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½?
 
     ble_gap_sec_params_t params;
     params.bond            = 0; // 1 to bond, 0 to pair?
@@ -1995,11 +1995,7 @@ static void on_write_response(const ble_gattc_evt_t *const p_ble_gattc_evt)
         {
             printf("Received: %2x %2x %2x %2x\n", p_ble_gattc_evt->params.write_rsp.data[0],
                    p_ble_gattc_evt->params.write_rsp.data[1], p_ble_gattc_evt->params.write_rsp.data[2],
-                   p_ble_gattc_evt->params.write_rsp.data[3]);
-            if ((p_ble_gattc_evt->params.write_rsp.data[0] == 0x21) &&
-                (p_ble_gattc_evt->params.write_rsp.data[1] == 0x02))
-            {
-            }
+                   p_ble_gattc_evt->params.write_rsp.data[3]);            
         }
         break;
         case 5:
@@ -2102,7 +2098,7 @@ static std::ofstream adpcmOutFile(adpcmFileName.c_str(),
 static void EndVoice()
 {
     CloseMic();
-    adpcmOutFile.close();
+    //adpcmOutFile.close();
     //nCount = 0;
 
     //// decode
@@ -2142,6 +2138,7 @@ static void on_hvx(const ble_gattc_evt_t *const p_ble_gattc_evt)
                     if (bAudioSearch && bAudioStart)
                     {
                         // decode
+                        adpcmOutFile.close();
                         printf("voice end");
                          string cmd = "C:\\1\\ADPCM_PCM.exe c:\\1\\adpcm.bin C:\\1\\";
                          cmd += GetWaveFileName_CurrentTime();
