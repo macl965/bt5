@@ -71,6 +71,35 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <functional>
+#include <chrono>
+#include <future>
+#include <cstdio>
+
+class later
+{
+  public:
+    template <class callable, class... arguments>
+    later(int after, bool async, callable &&f, arguments &&... args)
+    {
+        std::function<typename std::result_of<callable(arguments...)>::type()> task(
+            std::bind(std::forward<callable>(f), std::forward<arguments>(args)...));
+
+        if (async)
+        {
+            std::thread([after, task]() {
+                std::this_thread::sleep_for(std::chrono::milliseconds(after));
+                task();
+            })
+                .detach();
+        }
+        else
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(after));
+            task();
+        }
+    }
+};
 
 using std::ostream;
 using std::string;
@@ -122,7 +151,8 @@ enum {
 
 #define TARGET_DEV_NAME                                                                            \
     "VinoX_BT5_2" /**< Connect to a peripheral using a given advertising name here. */
-const string sub_target_dev_name = "1846"; // 18-46-44-81-44-54
+const string sub_target_dev_name = "D4B8";
+//"1846"; // 18-46-44-81-44-54
 
 #define MAX_PEER_COUNT 1 /**< Maximum number of peer's application intends to manage. */
 
@@ -744,7 +774,27 @@ static void EnableVoiceNotice(uint16_t voice_char_handle)
     // if (write_params.handle == 0x30)
     //       return;
 
-    uint32_t write_gatt_status = sd_ble_gattc_write(m_adapter, m_connection_handle, &write_params);
+    for (int iTry = 0; iTry < 3; iTry++)
+    {
+        uint32_t write_gatt_status =
+            sd_ble_gattc_write(m_adapter, m_connection_handle, &write_params);
+        if (write_gatt_status != NRF_SUCCESS)
+        {
+            printf("wrrite voice handle is 0x%X\n", write_params.handle);
+            printf("wrrite voice failed. Error code 0x%X\n", write_gatt_status);
+            fflush(stdout);
+            _sleep(1000);
+        }
+        else
+        {
+            printf("wrrite voice handle is 0x%X\n", write_params.handle);
+            printf("wrrite voice successfully.  0x%X\n", write_gatt_status);
+            fflush(stdout);
+            break;
+        }
+    }
+
+    /*uint32_t write_gatt_status = sd_ble_gattc_write(m_adapter, m_connection_handle, &write_params);
     if (write_gatt_status != NRF_SUCCESS)
     {
         printf("wrrite voice handle is 0x%X\n", write_params.handle);
@@ -756,10 +806,15 @@ static void EnableVoiceNotice(uint16_t voice_char_handle)
         printf("wrrite voice handle is 0x%X\n", write_params.handle);
         printf("wrrite voice successfully.  0x%X\n", write_gatt_status);
         fflush(stdout);
-    }
+    }*/
 }
+static bool bAudioSearch = false;
+static bool bAudioStart  = false;
 static void OpenMic()
 {
+    bAudioSearch = false;
+    bAudioStart  = false;
+
     ble_gattc_write_params_t write_params;
     memset(&write_params, 0, sizeof(write_params));
     write_params.write_op  = BLE_GATT_OP_WRITE_REQ;
@@ -1826,6 +1881,7 @@ static void on_read_response(const ble_gattc_evt_t *const p_ble_gattc_evt)
                 printf("write voice notification of %d.\n",
                        p_ble_gattc_evt->params.read_rsp.handle + 5);
                 EnableVoiceNotice(p_ble_gattc_evt->params.read_rsp.handle + 5);
+                EnableVoiceNotice(p_ble_gattc_evt->params.read_rsp.handle + 8);
             }
             /*if (m_service_end_handle < 0xFFFF)
                 findMoreService(p_ble_gattc_evt->params.read_rsp.handle);*/
@@ -1913,6 +1969,106 @@ static void on_write_response(const ble_gattc_evt_t *const p_ble_gattc_evt)
         printf("Error. Write operation failed. Error code 0x%X\n", p_ble_gattc_evt->gatt_status);
         fflush(stdout);
     }
+	
+	int nLen = p_ble_gattc_evt->params.write_rsp.len;
+    printf("Receive write response : %d\n", nLen);
+    switch (nLen)
+    {
+        case 1:
+        {
+            printf("Received : %2x\n", p_ble_gattc_evt->params.write_rsp.data[0]);
+        }
+        break;
+        case 2:
+        {
+            printf("Received: %2x %2x\n", p_ble_gattc_evt->params.write_rsp.data[0],
+                   p_ble_gattc_evt->params.write_rsp.data[1]);
+        }
+        break;
+        case 3:
+        {
+            printf("Received: %2x %2x %2x\n", p_ble_gattc_evt->params.write_rsp.data[0],
+                   p_ble_gattc_evt->params.write_rsp.data[1], p_ble_gattc_evt->params.write_rsp.data[2]);
+        }
+        break;
+        case 4:
+        {
+            printf("Received: %2x %2x %2x %2x\n", p_ble_gattc_evt->params.write_rsp.data[0],
+                   p_ble_gattc_evt->params.write_rsp.data[1], p_ble_gattc_evt->params.write_rsp.data[2],
+                   p_ble_gattc_evt->params.write_rsp.data[3]);
+            if ((p_ble_gattc_evt->params.write_rsp.data[0] == 0x21) &&
+                (p_ble_gattc_evt->params.write_rsp.data[1] == 0x02))
+            {
+            }
+        }
+        break;
+        case 5:
+        {
+            printf("Received: %2x %2x %2x %2x %2x\n", p_ble_gattc_evt->params.write_rsp.data[0],
+                   p_ble_gattc_evt->params.write_rsp.data[1], p_ble_gattc_evt->params.write_rsp.data[2],
+                   p_ble_gattc_evt->params.write_rsp.data[3], p_ble_gattc_evt->params.write_rsp.data[4]);
+        }
+        break;
+        case 6:
+        {
+            printf("Received: %2x %2x %2x %2x %2x %2x\n", p_ble_gattc_evt->params.write_rsp.data[0],
+                   p_ble_gattc_evt->params.write_rsp.data[1], p_ble_gattc_evt->params.write_rsp.data[2],
+                   p_ble_gattc_evt->params.write_rsp.data[3], p_ble_gattc_evt->params.write_rsp.data[4],
+                   p_ble_gattc_evt->params.write_rsp.data[5]);
+        }
+        break;
+        case 7:
+        {
+            printf("Received: %2x %2x %2x %2x %2x %2x %2x\n", p_ble_gattc_evt->params.write_rsp.data[0],
+                   p_ble_gattc_evt->params.write_rsp.data[1], p_ble_gattc_evt->params.write_rsp.data[2],
+                   p_ble_gattc_evt->params.write_rsp.data[3], p_ble_gattc_evt->params.write_rsp.data[4],
+                   p_ble_gattc_evt->params.write_rsp.data[5], p_ble_gattc_evt->params.write_rsp.data[6]);
+        }
+        break;
+        case 8:
+        {
+            printf("Received: %2x %2x %2x %2x %2x %2x %2x %2x\n",
+                   p_ble_gattc_evt->params.write_rsp.data[0], p_ble_gattc_evt->params.write_rsp.data[1],
+                   p_ble_gattc_evt->params.write_rsp.data[2], p_ble_gattc_evt->params.write_rsp.data[3],
+                   p_ble_gattc_evt->params.write_rsp.data[4], p_ble_gattc_evt->params.write_rsp.data[5],
+                   p_ble_gattc_evt->params.write_rsp.data[6], p_ble_gattc_evt->params.write_rsp.data[7]);
+        }
+        break;
+        case 9:
+        {
+            printf("Received: %2x %2x %2x %2x %2x %2x %2x %2x %2x\n",
+                   p_ble_gattc_evt->params.write_rsp.data[0], p_ble_gattc_evt->params.write_rsp.data[1],
+                   p_ble_gattc_evt->params.write_rsp.data[2], p_ble_gattc_evt->params.write_rsp.data[3],
+                   p_ble_gattc_evt->params.write_rsp.data[4], p_ble_gattc_evt->params.write_rsp.data[5],
+                   p_ble_gattc_evt->params.write_rsp.data[6], p_ble_gattc_evt->params.write_rsp.data[7],
+                   p_ble_gattc_evt->params.write_rsp.data[8]);
+        }
+        break;
+        case 10:
+        {
+            printf("Received: %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x\n",
+                   p_ble_gattc_evt->params.write_rsp.data[0], p_ble_gattc_evt->params.write_rsp.data[1],
+                   p_ble_gattc_evt->params.write_rsp.data[2], p_ble_gattc_evt->params.write_rsp.data[3],
+                   p_ble_gattc_evt->params.write_rsp.data[4], p_ble_gattc_evt->params.write_rsp.data[5],
+                   p_ble_gattc_evt->params.write_rsp.data[6], p_ble_gattc_evt->params.write_rsp.data[7],
+                   p_ble_gattc_evt->params.write_rsp.data[8], p_ble_gattc_evt->params.write_rsp.data[9]);
+        }
+        break;
+        case 11:
+        {
+            printf("Received: %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x\n",
+                   p_ble_gattc_evt->params.write_rsp.data[0], p_ble_gattc_evt->params.write_rsp.data[1],
+                   p_ble_gattc_evt->params.write_rsp.data[2], p_ble_gattc_evt->params.write_rsp.data[3],
+                   p_ble_gattc_evt->params.write_rsp.data[4], p_ble_gattc_evt->params.write_rsp.data[5],
+                   p_ble_gattc_evt->params.write_rsp.data[6], p_ble_gattc_evt->params.write_rsp.data[7],
+                   p_ble_gattc_evt->params.write_rsp.data[8], p_ble_gattc_evt->params.write_rsp.data[9]);
+        }
+        break;
+        default:
+        {
+            printf("Received length is %d\n", p_ble_gattc_evt->params.write_rsp.len);
+        }
+    }
 }
 
 /**@brief Function called on BLE_GATTC_EVT_HVX event.
@@ -1939,9 +2095,27 @@ std::string GetWaveFileName_CurrentTime()
     strftime(buf, sizeof(buf), "%m%d_%H%M%S.wav", &tstruct);
     return buf;
 }
+
+static string adpcmFileName = "C:\\1\\adpcm.bin";
+static std::ofstream adpcmOutFile(adpcmFileName.c_str(),
+                                  std::ios::out | std::ios::app | std::ios::binary | std::ios::ate);
+static void EndVoice()
+{
+    CloseMic();
+    adpcmOutFile.close();
+    //nCount = 0;
+
+    //// decode
+    //string cmd = "C:\\1\\ADPCM_PCM.exe c:\\1\\adpcm.bin C:\\1\\";
+    //cmd += GetWaveFileName_CurrentTime();
+    //cmd += " 16000";
+    //std::system(cmd.c_str());
+}
 static void on_hvx(const ble_gattc_evt_t *const p_ble_gattc_evt)
 {
     static int nCount = 0;
+     //printf(" [for debug] Received length of hvx : %2x\n", p_ble_gattc_evt->params.hvx.len);
+    //printf(" [for debug] Received length of wrs : %2x\n", p_ble_gattc_evt->params.write_rsp.len);
     // printf("Received notification from hanld : %2x\n", p_ble_gattc_evt->params.hvx.handle);
     if (p_ble_gattc_evt->params.hvx.handle >= m_hrm_char_handle ||
         p_ble_gattc_evt->params.hvx.handle <= m_hrm_cccd_handle ||
@@ -1956,6 +2130,25 @@ static void on_hvx(const ble_gattc_evt_t *const p_ble_gattc_evt)
             case 1:
             {
                 printf("Received : %2x\n", p_ble_gattc_evt->params.hvx.data[0]);
+                if (p_ble_gattc_evt->params.hvx.data[0] == 0x04){
+                    bAudioStart = true;
+					}
+                if (p_ble_gattc_evt->params.hvx.data[0] == 0x08)
+                {
+                    bAudioSearch = true;
+                }
+                if (p_ble_gattc_evt->params.hvx.data[0] == 0x00)
+                {
+                    if (bAudioSearch && bAudioStart)
+                    {
+                        // decode
+                        printf("voice end");
+                         string cmd = "C:\\1\\ADPCM_PCM.exe c:\\1\\adpcm.bin C:\\1\\";
+                         cmd += GetWaveFileName_CurrentTime();
+                         cmd += " 16000";
+                         std::system(cmd.c_str());
+                    }
+                }
             }
             break;
             case 2:
@@ -1981,6 +2174,8 @@ static void on_hvx(const ble_gattc_evt_t *const p_ble_gattc_evt)
                     std::ofstream adpcmOutFile("C:\\1\\adpcm.bin", std::ios::trunc);
                     adpcmOutFile.close();
                     OpenMic();
+                    nCount = 0;
+                    later later_end_voice(2 * 1000, true, &EndVoice);
                 }
             }
             break;
@@ -2049,11 +2244,7 @@ static void on_hvx(const ble_gattc_evt_t *const p_ble_gattc_evt)
                 for (int iDataADPCM = 0; iDataADPCM < 134; iDataADPCM++)
                 {
                     dataADPCM[iDataADPCM] = p_ble_gattc_evt->params.hvx.data[iDataADPCM];
-                }
-                string adpcmFileName = "C:\\1\\adpcm.bin";
-                static std::ofstream adpcmOutFile(adpcmFileName.c_str(),
-                                                  std::ios::out | std::ios::app | std::ios::binary |
-                                                      std::ios::ate);
+                }                             
                 try
                 {
                     // adpcmOutFile.open("C:\\1\\adpcm.txt", std::ios::app | std::ios::binary |
@@ -2075,25 +2266,27 @@ static void on_hvx(const ble_gattc_evt_t *const p_ble_gattc_evt)
                     printf("exception in write file %s.\n", ex.what());
                 }
 
-                nCount++;
-                if (nCount == 200)
-                {
-                    CloseMic();
-                    adpcmOutFile.close();
-                    nCount = 0;
+                //nCount++;
+                //if (nCount == 200)
+                //{
+                //    CloseMic();
+                //    adpcmOutFile.close();
+                //    nCount = 0;
 
-                    // decode
-                    string cmd = "C:\\1\\ADPCM_PCM.exe c:\\1\\adpcm.bin C:\\1\\";
-                    cmd += GetWaveFileName_CurrentTime();
-                    cmd += " 16000";
-                    std::system(cmd.c_str());
-                }
+                //    // decode
+                //    string cmd = "C:\\1\\ADPCM_PCM.exe c:\\1\\adpcm.bin C:\\1\\";
+                //    cmd += GetWaveFileName_CurrentTime();
+                //    cmd += " 16000";
+                //    std::system(cmd.c_str());
+                //}
                 // volice
             }
             break;
             default:
             {
-                printf("Received length is %d\n", p_ble_gattc_evt->params.hvx.len);
+                printf("Received length of hvx is %d\n", p_ble_gattc_evt->params.hvx.len);
+                printf("Received length of wsp is %d\n", p_ble_gattc_evt->params.write_rsp.len);
+                //printf("Received length of wsp is %d\n", p_ble_gattc_evt->params.write_rsp.len);
             }
         }
     }
@@ -2104,6 +2297,7 @@ static void on_hvx(const ble_gattc_evt_t *const p_ble_gattc_evt)
 
     fflush(stdout);
 }
+
 
 /**@brief Function called on BLE_GAP_EVT_CONN_PARAM_UPDATE_REQUEST event.
  *
@@ -2125,7 +2319,7 @@ static void on_conn_params_update_request(const ble_gap_evt_t *const p_ble_gap_e
     {
         printf("Conn params update successfully!\n");
         fflush(stdout);
-	}
+    }
 }
 
 #if NRF_SD_BLE_API >= 3
@@ -2207,8 +2401,8 @@ static void ble_evt_dispatch(adapter_t *adapter, ble_evt_t *p_ble_evt)
             /*sd_ble_gap_conn_param_update(
                 adapter, p_ble_evt->evt.common_evt.conn_handle,
                 &p_ble_evt->evt.gap_evt.params.conn_param_update.conn_params);*/
-            
-            //sd_ble_gap_conn_param_update(adapter, p_ble_evt->evt.common_evt.conn_handle, NULL);
+
+            // sd_ble_gap_conn_param_update(adapter, p_ble_evt->evt.common_evt.conn_handle, NULL);
             printf("connection parameter is Min = %d Max = %d, latency = %d, timeout = %d\n",
                    p_ble_evt->evt.gap_evt.params.conn_param_update.conn_params.min_conn_interval,
                    p_ble_evt->evt.gap_evt.params.conn_param_update.conn_params.max_conn_interval,
