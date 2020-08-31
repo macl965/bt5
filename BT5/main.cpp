@@ -151,7 +151,8 @@ enum {
 
 #define TARGET_DEV_NAME                                                                            \
     "VinoX_BT5_2" /**< Connect to a peripheral using a given advertising name here. */
-const string sub_target_dev_name = "D4B8";
+//const string sub_target_dev_name = "D4B8";
+const string sub_target_dev_name = "1846";
 //"1846"; // 18-46-44-81-44-54
 
 #define MAX_PEER_COUNT 1 /**< Maximum number of peer's application intends to manage. */
@@ -1105,10 +1106,6 @@ static void on_adv_report(const ble_gap_evt_t *const p_ble_gap_evt)
         }
 
         m_connection_is_in_progress = true;
-    }
-    else
-    {
-        printf(" compare name failed! ");
     }
 #if NRF_SD_BLE_API >= 6
     else
@@ -2447,6 +2444,13 @@ static void ble_evt_dispatch(adapter_t *adapter, ble_evt_t *p_ble_evt)
         case BLE_GAP_EVT_PHY_UPDATE:
             on_phy_update(&(p_ble_evt->evt.gap_evt));
             on_pair(&(p_ble_evt->evt.gap_evt));
+
+			//case BLE_GAP_EVT_DATA_LENGTH_UPDATE_REQUEST:
+   //         //sd_ble_gap_data_length_update
+   //                         ble_gap_data_length_params_t t;
+   //         ble_gap_data_length_limitation_t k;
+   //                         sd_ble_gap_data_length_update(m_adapter, m_connection_handle, NULL, NULL);
+   //         printf("received lenght update request");
 
         case BLE_GATTC_EVT_PRIM_SRVC_DISC_RSP:
             on_service_discovery_response(&(p_ble_evt->evt.gattc_evt));
