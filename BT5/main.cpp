@@ -2557,6 +2557,7 @@ int main(int argc, char *argv[])
     }
 
     printf("Serial port used: %s\n", serial_port);
+    printf("Serial port used: %s\n", sub_target_dev_macAddress.c_str());
     printf("Baud rate used: %d\n", baud_rate);
     fflush(stdout);
 
