@@ -147,12 +147,11 @@ enum {
 
 //#define TARGET_DEV_NAME                                                                            \
 //    "RemoteB029" /**< Connect to a peripheral using a given advertising name here. */
-// const string sub_target_dev_name = "D4B8";
+// const string sub_target_dev_macAddress = "D4B8";
 
-#define TARGET_DEV_NAME                                                                            \
-    "VinoX_BT5_2" /**< Connect to a peripheral using a given advertising name here. */
-const string sub_target_dev_name = "D4B8";
-//const string sub_target_dev_name = "1846";
+static string TARGET_DEV_NAME = "VinoX_BT5_2"; /**< Connect to a peripheral using a given advertising name here. */
+static string sub_target_dev_macAddress = "D4B8";
+//const string sub_target_dev_macAddress = "1846";
 //"1846"; // 18-46-44-81-44-54
 
 #define MAX_PEER_COUNT 1 /**< Maximum number of peer's application intends to manage. */
@@ -1066,7 +1065,7 @@ static void on_adv_report(const ble_gap_evt_t *const p_ble_gap_evt)
     n                    = sprintf(buffer, "0x%s\n", str);
     string deviceAddress = GetString(str);
     // 1804ED207FBB   bt 412
-    if (deviceAddress.find(sub_target_dev_name) != string::npos)
+    if (deviceAddress.find(sub_target_dev_macAddress) != string::npos)
     {
         printf("target device address: 0x%s\n", str);
     }
@@ -1077,7 +1076,7 @@ static void on_adv_report(const ble_gap_evt_t *const p_ble_gap_evt)
     // printf("Received advertisement report with device address: 0x%s\n", str);
     fflush(stdout);
 
-    if (find_adv_name(&p_ble_gap_evt->params.adv_report, TARGET_DEV_NAME))
+    if (find_adv_name(&p_ble_gap_evt->params.adv_report, TARGET_DEV_NAME.c_str()))
     {
         printf(" connect start ");
 
@@ -2544,13 +2543,17 @@ static void ble_evt_dispatch(adapter_t *adapter, ble_evt_t *p_ble_evt)
 int main(int argc, char *argv[])
 {
     uint32_t error_code;
-    char *serial_port  = DEFAULT_UART_PORT_NAME;
+    char *serial_port  = DEFAULT_UART_PORT_NAME;    
     uint32_t baud_rate = DEFAULT_BAUD_RATE;
     uint8_t cccd_value = 0;
 
-    if (argc > 1)
+    if (argc == 2)
     {
         serial_port = argv[1];
+    }
+    if(argc == 3){
+        serial_port = argv[1];
+        sub_target_dev_macAddress = argv[2];
     }
 
     printf("Serial port used: %s\n", serial_port);
