@@ -151,8 +151,8 @@ enum {
 
 #define TARGET_DEV_NAME                                                                            \
     "VinoX_BT5_2" /**< Connect to a peripheral using a given advertising name here. */
-//const string sub_target_dev_name = "D4B8";
-const string sub_target_dev_name = "1846";
+const string sub_target_dev_name = "D4B8";
+//const string sub_target_dev_name = "1846";
 //"1846"; // 18-46-44-81-44-54
 
 #define MAX_PEER_COUNT 1 /**< Maximum number of peer's application intends to manage. */
@@ -547,7 +547,7 @@ static uint32_t ble_cfg_set(uint8_t conn_cfg_tag)
 
     memset(&ble_cfg, 0x00, sizeof(ble_cfg));
     ble_cfg.conn_cfg.conn_cfg_tag                 = conn_cfg_tag;
-    ble_cfg.conn_cfg.params.gatt_conn_cfg.att_mtu = 150;
+    ble_cfg.conn_cfg.params.gatt_conn_cfg.att_mtu = 247;
 
     error_code = sd_ble_cfg_set(m_adapter, BLE_CONN_CFG_GATT, &ble_cfg, ram_start);
     if (error_code != NRF_SUCCESS)
@@ -1028,7 +1028,9 @@ static void on_pair(const ble_gap_evt_t *const p_ble_gap_evt)
     params.mitm            = 0;
     params.lesc            = 0;
     params.keypress        = 0;
-    params.io_caps         = BLE_GAP_IO_CAPS_NONE; // BLE_GAP_IO_CAPS_KEYBOARD_DISPLAY;
+    params.io_caps =
+        BLE_GAP_IO_CAPS_NONE; // BLE_GAP_IO_CAPS_NONE; //
+                              // BLE_GAP_IO_CAPS_KEYBOARD_DISPLAY;BLE_GAP_IO_CAPS_KEYBOARD_ONLY
     params.oob             = 0;
     params.min_key_size    = 7;
     params.max_key_size    = 16;
@@ -2330,7 +2332,7 @@ static void on_exchange_mtu_request(const ble_gatts_evt_t *const p_ble_gatts_evt
 #if NRF_SD_BLE_API < 5
                                                         GATT_MTU_SIZE_DEFAULT);
 #else
-                                                        150); // modify by Macl ,
+                                        247); // modify by Macl ,
                                                               // BLE_GATT_ATT_MTU_DEFAULT
 #endif
 
@@ -2381,9 +2383,23 @@ static void ble_evt_dispatch(adapter_t *adapter, ble_evt_t *p_ble_evt)
     {
             // Macl add
         case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
-            ble_gap_sec_params_t sec_params;
+            /*ble_gap_sec_params_t sec_params;
+            ble_gap_sec_keyset_t sec_keyset;
+            ble_gap_enc_key_t m_own_enc_key;
+            ble_gap_enc_key_t m_peer_enc_key;
+
+			sec_keyset.keys_own.p_enc_key = &m_own_enc_key;
+            sec_keyset.keys_own.p_id_key  = NULL;
+                        sec_keyset.keys_own.p_pk      = NULL;
+            sec_keyset.keys_own.p_sign_key            = NULL;
+
+			sec_keyset.keys_peer.p_enc_key = &m_peer_enc_key;
+            sec_keyset.keys_peer.p_id_key  = NULL;
+                        sec_keyset.keys_peer.p_pk      = NULL;
+            sec_keyset.keys_peer.p_sign_key            = NULL;*/
+
             sd_ble_gap_sec_params_reply(adapter, p_ble_evt->evt.common_evt.conn_handle,
-                                        BLE_GAP_SEC_STATUS_SUCCESS, NULL, NULL);
+                                        BLE_GAP_SEC_STATUS_SUCCESS, NULL, NULL);//&sec_keyset);
             printf("Central Accepts Peripheral parameters : success, central_params:NULL, NULL\n");
             break;
         // Macl add
@@ -2409,7 +2425,7 @@ static void ble_evt_dispatch(adapter_t *adapter, ble_evt_t *p_ble_evt)
             printf("CONN_SEC_UPDATE\n");
             service_discovery_start(); // it will run if remote update params
                                        // ble_enable_params
-
+            printf("crash?");
             // service_discovery_voice();
             break;
             // Macl add
@@ -2445,12 +2461,25 @@ static void ble_evt_dispatch(adapter_t *adapter, ble_evt_t *p_ble_evt)
             on_phy_update(&(p_ble_evt->evt.gap_evt));
             on_pair(&(p_ble_evt->evt.gap_evt));
 
-			//case BLE_GAP_EVT_DATA_LENGTH_UPDATE_REQUEST:
-   //         //sd_ble_gap_data_length_update
-   //                         ble_gap_data_length_params_t t;
-   //         ble_gap_data_length_limitation_t k;
-   //                         sd_ble_gap_data_length_update(m_adapter, m_connection_handle, NULL, NULL);
-   //         printf("received lenght update request");
+		//case BLE_GAP_EVT_DATA_LENGTH_UPDATE_REQUEST:
+  //          //sd_ble_gap_data_length_update
+  //                          ble_gap_data_length_params_t t;
+  //          ble_gap_data_length_limitation_t k;
+  //                          //sd_ble_gap_data_length_update(m_adapter, m_connection_handle, &t, &k);
+  //          sd_ble_gap_data_length_update(m_adapter, m_connection_handle, NULL, NULL);
+  //          printf("received lenght update request.\n");
+  //     case BLE_GAP_EVT_DATA_LENGTH_UPDATE:
+  //                          printf("Max rx octets: { %d }\n",
+  //                                 p_ble_evt->evt.gap_evt.params.data_length_update.effective_params
+  //                                     .max_rx_octets);
+  //         printf("Max tx octets: { %d }\n",
+  //                p_ble_evt->evt.gap_evt.params.data_length_update.effective_params.max_tx_octets);
+  //                          printf("Max rx time: { %d }\n",
+  //                                 p_ble_evt->evt.gap_evt.params.data_length_update.effective_params
+  //                                     .max_rx_time_us);
+		//				printf("Max tx time: { %d }\n",
+  //                                 p_ble_evt->evt.gap_evt.params.data_length_update.effective_params
+  //                                     .max_tx_time_us);
 
         case BLE_GATTC_EVT_PRIM_SRVC_DISC_RSP:
             on_service_discovery_response(&(p_ble_evt->evt.gattc_evt));
