@@ -54,8 +54,8 @@
  * - Main
  */
 
-//try github
-//try github with the same account
+// try github
+// try github with the same account
 
 /** Includes */
 #include "ble.h"
@@ -66,15 +66,14 @@
 #include <string.h>
 
 #include <chrono>
+#include <cstdio>
 #include <ctime>
 #include <fstream>
+#include <functional>
+#include <future>
 #include <iostream>
 #include <string>
 #include <vector>
-#include <functional>
-#include <chrono>
-#include <future>
-#include <cstdio>
 
 class later
 {
@@ -135,12 +134,14 @@ enum {
     0x0 /**< Scan timeout between 0x01 and 0xFFFF in seconds, 0x0 disables timeout. */
 
 #define MIN_CONNECTION_INTERVAL                                                                    \
-    MSEC_TO_UNITS(7.5, UNIT_1_25_MS) /**< Determines minimum connection interval in milliseconds.  \
-                                      */
+    MSEC_TO_UNITS(7.5,                                                                             \
+                  UNIT_1_25_MS) /**< Determines minimum connection interval in milliseconds.  \    \
+                                 */
 #define MAX_CONNECTION_INTERVAL                                                                    \
-    MSEC_TO_UNITS(7.5, UNIT_1_25_MS) /**< Determines maximum connection interval in milliseconds.  \
-                                      */
-#define SLAVE_LATENCY 0              /**< Slave Latency in number of connection events. */
+    MSEC_TO_UNITS(7.5,                                                                             \
+                  UNIT_1_25_MS) /**< Determines maximum connection interval in milliseconds.  \    \
+                                 */
+#define SLAVE_LATENCY 0         /**< Slave Latency in number of connection events. */
 #define CONNECTION_SUPERVISION_TIMEOUT                                                             \
     MSEC_TO_UNITS(4000,                                                                            \
                   UNIT_10_MS) /**< Determines supervision time-out in units of 10 milliseconds. */
@@ -149,9 +150,10 @@ enum {
 //    "RemoteB029" /**< Connect to a peripheral using a given advertising name here. */
 // const string sub_target_dev_macAddress = "D4B8";
 
-static string TARGET_DEV_NAME = "VinoX_BT5_2"; /**< Connect to a peripheral using a given advertising name here. */
-static string sub_target_dev_macAddress = "D4B8";
-//const string sub_target_dev_macAddress = "1846";
+static string TARGET_DEV_NAME =
+    "VinoX_BT5_2"; /**< Connect to a peripheral using a given advertising name here. */
+static string sub_target_dev_macAddress = "D4B8"; //"D4B8";
+// const string sub_target_dev_macAddress = "1846";
 //"1846"; // 18-46-44-81-44-54
 
 #define MAX_PEER_COUNT 1 /**< Maximum number of peer's application intends to manage. */
@@ -546,7 +548,7 @@ static uint32_t ble_cfg_set(uint8_t conn_cfg_tag)
 
     memset(&ble_cfg, 0x00, sizeof(ble_cfg));
     ble_cfg.conn_cfg.conn_cfg_tag                 = conn_cfg_tag;
-    ble_cfg.conn_cfg.params.gatt_conn_cfg.att_mtu = 247;
+    ble_cfg.conn_cfg.params.gatt_conn_cfg.att_mtu = 150;
 
     error_code = sd_ble_cfg_set(m_adapter, BLE_CONN_CFG_GATT, &ble_cfg, ram_start);
     if (error_code != NRF_SUCCESS)
@@ -747,14 +749,14 @@ static void EnableHOGPNotice(uint16_t hid_char_handle)
     uint32_t write_gatt_status = sd_ble_gattc_write(m_adapter, m_connection_handle, &write_params);
     if (write_gatt_status != NRF_SUCCESS)
     {
-        printf("wrrite gatt handle is 0x%X\n", write_params.handle);
-        printf("wrrite gatt failed. Error code 0x%X\n", write_gatt_status);
+        printf("write gatt handle is 0x%X\n", write_params.handle);
+        printf("write gatt failed. Error code 0x%X\n", write_gatt_status);
         fflush(stdout);
     }
     else
     {
-        printf("wrrite gatt handle is 0x%X\n", write_params.handle);
-        printf("wrrite gatt successfully.  0x%X\n", write_gatt_status);
+        printf("write gatt handle is 0x%X\n", write_params.handle);
+        printf("write gatt successfully.  0x%X\n", write_gatt_status);
         fflush(stdout);
     }
 }
@@ -780,31 +782,31 @@ static void EnableVoiceNotice(uint16_t voice_char_handle)
             sd_ble_gattc_write(m_adapter, m_connection_handle, &write_params);
         if (write_gatt_status != NRF_SUCCESS)
         {
-            printf("wrrite voice handle is 0x%X\n", write_params.handle);
-            printf("wrrite voice failed. Error code 0x%X\n", write_gatt_status);
+            printf("write voice handle is 0x%X\n", write_params.handle);
+            printf("write voice failed. Error code 0x%X\n", write_gatt_status);
             fflush(stdout);
             _sleep(1000);
         }
         else
         {
-            printf("wrrite voice handle is 0x%X\n", write_params.handle);
-            printf("wrrite voice successfully.  0x%X\n", write_gatt_status);
+            printf("write voice handle is 0x%X\n", write_params.handle);
+            printf("write voice successfully.  0x%X\n", write_gatt_status);
             fflush(stdout);
             break;
         }
     }
 
-    /*uint32_t write_gatt_status = sd_ble_gattc_write(m_adapter, m_connection_handle, &write_params);
-    if (write_gatt_status != NRF_SUCCESS)
+    /*uint32_t write_gatt_status = sd_ble_gattc_write(m_adapter, m_connection_handle, &write_params); 
+	if (write_gatt_status != NRF_SUCCESS)
     {
-        printf("wrrite voice handle is 0x%X\n", write_params.handle);
-        printf("wrrite voice failed. Error code 0x%X\n", write_gatt_status);
+        printf("write voice handle is 0x%X\n", write_params.handle);
+        printf("write voice failed. Error code 0x%X\n", write_gatt_status);
         fflush(stdout);
     }
     else
     {
-        printf("wrrite voice handle is 0x%X\n", write_params.handle);
-        printf("wrrite voice successfully.  0x%X\n", write_gatt_status);
+        printf("write voice handle is 0x%X\n", write_params.handle);
+        printf("write voice successfully.  0x%X\n", write_gatt_status);
         fflush(stdout);
     }*/
 }
@@ -831,14 +833,14 @@ static void OpenMic()
     uint32_t write_gatt_status = sd_ble_gattc_write(m_adapter, m_connection_handle, &write_params);
     if (write_gatt_status != NRF_SUCCESS)
     {
-        printf("wrrite voice handle is 0x%X\n", write_params.handle);
-        printf("wrrite voice failed. Error code 0x%X\n", write_gatt_status);
+        printf("write voice handle is 0x%X\n", write_params.handle);
+        printf("write voice failed. Error code 0x%X\n", write_gatt_status);
         fflush(stdout);
     }
     else
     {
-        printf("wrrite voice handle is 0x%X\n", write_params.handle);
-        printf("wrrite voice successfully.  0x%X\n", write_gatt_status);
+        printf("write voice handle is 0x%X\n", write_params.handle);
+        printf("write voice successfully.  0x%X\n", write_gatt_status);
         fflush(stdout);
     }
 }
@@ -860,14 +862,14 @@ static void CloseMic()
     uint32_t write_gatt_status = sd_ble_gattc_write(m_adapter, m_connection_handle, &write_params);
     if (write_gatt_status != NRF_SUCCESS)
     {
-        printf("wrrite voice handle is 0x%X\n", write_params.handle);
-        printf("wrrite voice failed. Error code 0x%X\n", write_gatt_status);
+        printf("write voice handle is 0x%X\n", write_params.handle);
+        printf("write voice failed. Error code 0x%X\n", write_gatt_status);
         fflush(stdout);
     }
     else
     {
-        printf("wrrite voice handle is 0x%X\n", write_params.handle);
-        printf("wrrite voice successfully.  0x%X\n", write_gatt_status);
+        printf("write voice handle is 0x%X\n", write_params.handle);
+        printf("write voice successfully.  0x%X\n", write_gatt_status);
         fflush(stdout);
     }
 }
@@ -1010,7 +1012,7 @@ static void on_connected(const ble_gap_evt_t *const p_ble_gap_evt)
     m_connection_is_in_progress = false;
 
     // service_discovery_start();
-    update_phy(p_ble_gap_evt);
+    // update_phy(p_ble_gap_evt);
 }
 
 static void on_pair(const ble_gap_evt_t *const p_ble_gap_evt)
@@ -1023,10 +1025,10 @@ static void on_pair(const ble_gap_evt_t *const p_ble_gap_evt)
     // 1����һ�����ͷ��Ͱ�ȫ���󣬴Ӷ���ʹ�ֻ�������������?
 
     ble_gap_sec_params_t params;
-    params.bond            = 0; // 1 to bond, 0 to pair?
-    params.mitm            = 0;
-    params.lesc            = 0;
-    params.keypress        = 0;
+    params.bond     = 0; // 1 to bond, 0 to pair?
+    params.mitm     = 0;
+    params.lesc     = 0;
+    params.keypress = 0;
     params.io_caps =
         BLE_GAP_IO_CAPS_NONE; // BLE_GAP_IO_CAPS_NONE; //
                               // BLE_GAP_IO_CAPS_KEYBOARD_DISPLAY;BLE_GAP_IO_CAPS_KEYBOARD_ONLY
@@ -1076,7 +1078,8 @@ static void on_adv_report(const ble_gap_evt_t *const p_ble_gap_evt)
     // printf("Received advertisement report with device address: 0x%s\n", str);
     fflush(stdout);
 
-    if (find_adv_name(&p_ble_gap_evt->params.adv_report, TARGET_DEV_NAME.c_str()))
+    // if (find_adv_name(&p_ble_gap_evt->params.adv_report, TARGET_DEV_NAME.c_str()))
+    if (true)
     {
         printf(" connect start ");
 
@@ -1092,7 +1095,8 @@ static void on_adv_report(const ble_gap_evt_t *const p_ble_gap_evt)
                                       &m_scan_param, &m_connection_param
 #if NRF_SD_BLE_API >= 5
                                       ,
-                                      m_config_id
+            m_config_id // m_config_id //BLE_CONN_CFG_TAG_DEFAULT
+                                          //can't receive notice when it is set to be BLE_CONN_CFG_TAG_DEFAULT(0)
 #endif
         );
         if (err_code != NRF_SUCCESS)
@@ -1967,8 +1971,8 @@ static void on_write_response(const ble_gattc_evt_t *const p_ble_gattc_evt)
         printf("Error. Write operation failed. Error code 0x%X\n", p_ble_gattc_evt->gatt_status);
         fflush(stdout);
     }
-	
-	int nLen = p_ble_gattc_evt->params.write_rsp.len;
+
+    int nLen = p_ble_gattc_evt->params.write_rsp.len;
     printf("Receive write response : %d\n", nLen);
     switch (nLen)
     {
@@ -1986,76 +1990,104 @@ static void on_write_response(const ble_gattc_evt_t *const p_ble_gattc_evt)
         case 3:
         {
             printf("Received: %2x %2x %2x\n", p_ble_gattc_evt->params.write_rsp.data[0],
-                   p_ble_gattc_evt->params.write_rsp.data[1], p_ble_gattc_evt->params.write_rsp.data[2]);
+                   p_ble_gattc_evt->params.write_rsp.data[1],
+                   p_ble_gattc_evt->params.write_rsp.data[2]);
         }
         break;
         case 4:
         {
             printf("Received: %2x %2x %2x %2x\n", p_ble_gattc_evt->params.write_rsp.data[0],
-                   p_ble_gattc_evt->params.write_rsp.data[1], p_ble_gattc_evt->params.write_rsp.data[2],
-                   p_ble_gattc_evt->params.write_rsp.data[3]);            
+                   p_ble_gattc_evt->params.write_rsp.data[1],
+                   p_ble_gattc_evt->params.write_rsp.data[2],
+                   p_ble_gattc_evt->params.write_rsp.data[3]);
         }
         break;
         case 5:
         {
             printf("Received: %2x %2x %2x %2x %2x\n", p_ble_gattc_evt->params.write_rsp.data[0],
-                   p_ble_gattc_evt->params.write_rsp.data[1], p_ble_gattc_evt->params.write_rsp.data[2],
-                   p_ble_gattc_evt->params.write_rsp.data[3], p_ble_gattc_evt->params.write_rsp.data[4]);
+                   p_ble_gattc_evt->params.write_rsp.data[1],
+                   p_ble_gattc_evt->params.write_rsp.data[2],
+                   p_ble_gattc_evt->params.write_rsp.data[3],
+                   p_ble_gattc_evt->params.write_rsp.data[4]);
         }
         break;
         case 6:
         {
             printf("Received: %2x %2x %2x %2x %2x %2x\n", p_ble_gattc_evt->params.write_rsp.data[0],
-                   p_ble_gattc_evt->params.write_rsp.data[1], p_ble_gattc_evt->params.write_rsp.data[2],
-                   p_ble_gattc_evt->params.write_rsp.data[3], p_ble_gattc_evt->params.write_rsp.data[4],
+                   p_ble_gattc_evt->params.write_rsp.data[1],
+                   p_ble_gattc_evt->params.write_rsp.data[2],
+                   p_ble_gattc_evt->params.write_rsp.data[3],
+                   p_ble_gattc_evt->params.write_rsp.data[4],
                    p_ble_gattc_evt->params.write_rsp.data[5]);
         }
         break;
         case 7:
         {
-            printf("Received: %2x %2x %2x %2x %2x %2x %2x\n", p_ble_gattc_evt->params.write_rsp.data[0],
-                   p_ble_gattc_evt->params.write_rsp.data[1], p_ble_gattc_evt->params.write_rsp.data[2],
-                   p_ble_gattc_evt->params.write_rsp.data[3], p_ble_gattc_evt->params.write_rsp.data[4],
-                   p_ble_gattc_evt->params.write_rsp.data[5], p_ble_gattc_evt->params.write_rsp.data[6]);
+            printf("Received: %2x %2x %2x %2x %2x %2x %2x\n",
+                   p_ble_gattc_evt->params.write_rsp.data[0],
+                   p_ble_gattc_evt->params.write_rsp.data[1],
+                   p_ble_gattc_evt->params.write_rsp.data[2],
+                   p_ble_gattc_evt->params.write_rsp.data[3],
+                   p_ble_gattc_evt->params.write_rsp.data[4],
+                   p_ble_gattc_evt->params.write_rsp.data[5],
+                   p_ble_gattc_evt->params.write_rsp.data[6]);
         }
         break;
         case 8:
         {
             printf("Received: %2x %2x %2x %2x %2x %2x %2x %2x\n",
-                   p_ble_gattc_evt->params.write_rsp.data[0], p_ble_gattc_evt->params.write_rsp.data[1],
-                   p_ble_gattc_evt->params.write_rsp.data[2], p_ble_gattc_evt->params.write_rsp.data[3],
-                   p_ble_gattc_evt->params.write_rsp.data[4], p_ble_gattc_evt->params.write_rsp.data[5],
-                   p_ble_gattc_evt->params.write_rsp.data[6], p_ble_gattc_evt->params.write_rsp.data[7]);
+                   p_ble_gattc_evt->params.write_rsp.data[0],
+                   p_ble_gattc_evt->params.write_rsp.data[1],
+                   p_ble_gattc_evt->params.write_rsp.data[2],
+                   p_ble_gattc_evt->params.write_rsp.data[3],
+                   p_ble_gattc_evt->params.write_rsp.data[4],
+                   p_ble_gattc_evt->params.write_rsp.data[5],
+                   p_ble_gattc_evt->params.write_rsp.data[6],
+                   p_ble_gattc_evt->params.write_rsp.data[7]);
         }
         break;
         case 9:
         {
             printf("Received: %2x %2x %2x %2x %2x %2x %2x %2x %2x\n",
-                   p_ble_gattc_evt->params.write_rsp.data[0], p_ble_gattc_evt->params.write_rsp.data[1],
-                   p_ble_gattc_evt->params.write_rsp.data[2], p_ble_gattc_evt->params.write_rsp.data[3],
-                   p_ble_gattc_evt->params.write_rsp.data[4], p_ble_gattc_evt->params.write_rsp.data[5],
-                   p_ble_gattc_evt->params.write_rsp.data[6], p_ble_gattc_evt->params.write_rsp.data[7],
+                   p_ble_gattc_evt->params.write_rsp.data[0],
+                   p_ble_gattc_evt->params.write_rsp.data[1],
+                   p_ble_gattc_evt->params.write_rsp.data[2],
+                   p_ble_gattc_evt->params.write_rsp.data[3],
+                   p_ble_gattc_evt->params.write_rsp.data[4],
+                   p_ble_gattc_evt->params.write_rsp.data[5],
+                   p_ble_gattc_evt->params.write_rsp.data[6],
+                   p_ble_gattc_evt->params.write_rsp.data[7],
                    p_ble_gattc_evt->params.write_rsp.data[8]);
         }
         break;
         case 10:
         {
             printf("Received: %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x\n",
-                   p_ble_gattc_evt->params.write_rsp.data[0], p_ble_gattc_evt->params.write_rsp.data[1],
-                   p_ble_gattc_evt->params.write_rsp.data[2], p_ble_gattc_evt->params.write_rsp.data[3],
-                   p_ble_gattc_evt->params.write_rsp.data[4], p_ble_gattc_evt->params.write_rsp.data[5],
-                   p_ble_gattc_evt->params.write_rsp.data[6], p_ble_gattc_evt->params.write_rsp.data[7],
-                   p_ble_gattc_evt->params.write_rsp.data[8], p_ble_gattc_evt->params.write_rsp.data[9]);
+                   p_ble_gattc_evt->params.write_rsp.data[0],
+                   p_ble_gattc_evt->params.write_rsp.data[1],
+                   p_ble_gattc_evt->params.write_rsp.data[2],
+                   p_ble_gattc_evt->params.write_rsp.data[3],
+                   p_ble_gattc_evt->params.write_rsp.data[4],
+                   p_ble_gattc_evt->params.write_rsp.data[5],
+                   p_ble_gattc_evt->params.write_rsp.data[6],
+                   p_ble_gattc_evt->params.write_rsp.data[7],
+                   p_ble_gattc_evt->params.write_rsp.data[8],
+                   p_ble_gattc_evt->params.write_rsp.data[9]);
         }
         break;
         case 11:
         {
             printf("Received: %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x\n",
-                   p_ble_gattc_evt->params.write_rsp.data[0], p_ble_gattc_evt->params.write_rsp.data[1],
-                   p_ble_gattc_evt->params.write_rsp.data[2], p_ble_gattc_evt->params.write_rsp.data[3],
-                   p_ble_gattc_evt->params.write_rsp.data[4], p_ble_gattc_evt->params.write_rsp.data[5],
-                   p_ble_gattc_evt->params.write_rsp.data[6], p_ble_gattc_evt->params.write_rsp.data[7],
-                   p_ble_gattc_evt->params.write_rsp.data[8], p_ble_gattc_evt->params.write_rsp.data[9]);
+                   p_ble_gattc_evt->params.write_rsp.data[0],
+                   p_ble_gattc_evt->params.write_rsp.data[1],
+                   p_ble_gattc_evt->params.write_rsp.data[2],
+                   p_ble_gattc_evt->params.write_rsp.data[3],
+                   p_ble_gattc_evt->params.write_rsp.data[4],
+                   p_ble_gattc_evt->params.write_rsp.data[5],
+                   p_ble_gattc_evt->params.write_rsp.data[6],
+                   p_ble_gattc_evt->params.write_rsp.data[7],
+                   p_ble_gattc_evt->params.write_rsp.data[8],
+                   p_ble_gattc_evt->params.write_rsp.data[9]);
         }
         break;
         default:
@@ -2096,20 +2128,20 @@ static std::ofstream adpcmOutFile(adpcmFileName.c_str(),
 static void EndVoice()
 {
     CloseMic();
-    //adpcmOutFile.close();
-    //nCount = 0;
+    // adpcmOutFile.close();
+    // nCount = 0;
 
     //// decode
-    //string cmd = "C:\\1\\ADPCM_PCM.exe c:\\1\\adpcm.bin C:\\1\\";
-    //cmd += GetWaveFileName_CurrentTime();
-    //cmd += " 16000";
-    //std::system(cmd.c_str());
+    // string cmd = "C:\\1\\ADPCM_PCM.exe c:\\1\\adpcm.bin C:\\1\\";
+    // cmd += GetWaveFileName_CurrentTime();
+    // cmd += " 16000";
+    // std::system(cmd.c_str());
 }
 static void on_hvx(const ble_gattc_evt_t *const p_ble_gattc_evt)
 {
     static int nCount = 0;
-     //printf(" [for debug] Received length of hvx : %2x\n", p_ble_gattc_evt->params.hvx.len);
-    //printf(" [for debug] Received length of wrs : %2x\n", p_ble_gattc_evt->params.write_rsp.len);
+    // printf(" [for debug] Received length of hvx : %2x\n", p_ble_gattc_evt->params.hvx.len);
+    // printf(" [for debug] Received length of wrs : %2x\n", p_ble_gattc_evt->params.write_rsp.len);
     // printf("Received notification from hanld : %2x\n", p_ble_gattc_evt->params.hvx.handle);
     if (p_ble_gattc_evt->params.hvx.handle >= m_hrm_char_handle ||
         p_ble_gattc_evt->params.hvx.handle <= m_hrm_cccd_handle ||
@@ -2124,9 +2156,10 @@ static void on_hvx(const ble_gattc_evt_t *const p_ble_gattc_evt)
             case 1:
             {
                 printf("Received : %2x\n", p_ble_gattc_evt->params.hvx.data[0]);
-                if (p_ble_gattc_evt->params.hvx.data[0] == 0x04){
+                if (p_ble_gattc_evt->params.hvx.data[0] == 0x04)
+                {
                     bAudioStart = true;
-					}
+                }
                 if (p_ble_gattc_evt->params.hvx.data[0] == 0x08)
                 {
                     bAudioSearch = true;
@@ -2138,10 +2171,10 @@ static void on_hvx(const ble_gattc_evt_t *const p_ble_gattc_evt)
                         // decode
                         adpcmOutFile.close();
                         printf("voice end");
-                         string cmd = "C:\\1\\ADPCM_PCM.exe c:\\1\\adpcm.bin C:\\1\\";
-                         cmd += GetWaveFileName_CurrentTime();
-                         cmd += " 16000";
-                         std::system(cmd.c_str());
+                        string cmd = "C:\\1\\ADPCM_PCM.exe c:\\1\\adpcm.bin C:\\1\\";
+                        cmd += GetWaveFileName_CurrentTime();
+                        cmd += " 16000";
+                        std::system(cmd.c_str());
                     }
                 }
             }
@@ -2239,7 +2272,7 @@ static void on_hvx(const ble_gattc_evt_t *const p_ble_gattc_evt)
                 for (int iDataADPCM = 0; iDataADPCM < 134; iDataADPCM++)
                 {
                     dataADPCM[iDataADPCM] = p_ble_gattc_evt->params.hvx.data[iDataADPCM];
-                }                             
+                }
                 try
                 {
                     // adpcmOutFile.open("C:\\1\\adpcm.txt", std::ios::app | std::ios::binary |
@@ -2261,8 +2294,8 @@ static void on_hvx(const ble_gattc_evt_t *const p_ble_gattc_evt)
                     printf("exception in write file %s.\n", ex.what());
                 }
 
-                //nCount++;
-                //if (nCount == 200)
+                // nCount++;
+                // if (nCount == 200)
                 //{
                 //    CloseMic();
                 //    adpcmOutFile.close();
@@ -2281,7 +2314,7 @@ static void on_hvx(const ble_gattc_evt_t *const p_ble_gattc_evt)
             {
                 printf("Received length of hvx is %d\n", p_ble_gattc_evt->params.hvx.len);
                 printf("Received length of wsp is %d\n", p_ble_gattc_evt->params.write_rsp.len);
-                //printf("Received length of wsp is %d\n", p_ble_gattc_evt->params.write_rsp.len);
+                // printf("Received length of wsp is %d\n", p_ble_gattc_evt->params.write_rsp.len);
             }
         }
     }
@@ -2292,7 +2325,6 @@ static void on_hvx(const ble_gattc_evt_t *const p_ble_gattc_evt)
 
     fflush(stdout);
 }
-
 
 /**@brief Function called on BLE_GAP_EVT_CONN_PARAM_UPDATE_REQUEST event.
  *
@@ -2331,7 +2363,7 @@ static void on_exchange_mtu_request(const ble_gatts_evt_t *const p_ble_gatts_evt
 #if NRF_SD_BLE_API < 5
                                                         GATT_MTU_SIZE_DEFAULT);
 #else
-                                        247); // modify by Macl ,
+                                                        150); // modify by Macl ,
                                                               // BLE_GATT_ATT_MTU_DEFAULT
 #endif
 
@@ -2371,6 +2403,8 @@ static void on_exchange_mtu_response(const ble_gattc_evt_t *const p_ble_gattc_ev
  */
 static void ble_evt_dispatch(adapter_t *adapter, ble_evt_t *p_ble_evt)
 {
+    uint32_t error_code1 = 999;
+
     if (p_ble_evt == NULL)
     {
         printf("Received an empty BLE event\n");
@@ -2379,27 +2413,33 @@ static void ble_evt_dispatch(adapter_t *adapter, ble_evt_t *p_ble_evt)
     }
 
     switch (p_ble_evt->header.evt_id)
-    {
-            // Macl add
+    { // BLE_EVT_BASE
+      // Macl add
+        case BLE_EVT_BASE:
+            break;
         case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
-            /*ble_gap_sec_params_t sec_params;
+            ble_gap_sec_params_t sec_params;
             ble_gap_sec_keyset_t sec_keyset;
             ble_gap_enc_key_t m_own_enc_key;
             ble_gap_enc_key_t m_peer_enc_key;
 
-			sec_keyset.keys_own.p_enc_key = &m_own_enc_key;
-            sec_keyset.keys_own.p_id_key  = NULL;
-                        sec_keyset.keys_own.p_pk      = NULL;
-            sec_keyset.keys_own.p_sign_key            = NULL;
+            sec_keyset.keys_own.p_enc_key  = NULL; //&m_own_enc_key;
+            sec_keyset.keys_own.p_id_key   = NULL;
+            sec_keyset.keys_own.p_pk       = NULL;
+            sec_keyset.keys_own.p_sign_key = NULL;
 
-			sec_keyset.keys_peer.p_enc_key = &m_peer_enc_key;
-            sec_keyset.keys_peer.p_id_key  = NULL;
-                        sec_keyset.keys_peer.p_pk      = NULL;
-            sec_keyset.keys_peer.p_sign_key            = NULL;*/
+            sec_keyset.keys_peer.p_enc_key  = NULL; //&m_peer_enc_key;
+            sec_keyset.keys_peer.p_id_key   = NULL;
+            sec_keyset.keys_peer.p_pk       = NULL;
+            sec_keyset.keys_peer.p_sign_key = NULL;
 
-            sd_ble_gap_sec_params_reply(adapter, p_ble_evt->evt.common_evt.conn_handle,
-                                        BLE_GAP_SEC_STATUS_SUCCESS, NULL, NULL);//&sec_keyset);
-            printf("Central Accepts Peripheral parameters : success, central_params:NULL, NULL\n");
+			/*error_code1 = sd_ble_gap_auth_key_reply(adapter, p_ble_evt->evt.common_evt.conn_handle,
+                                                    BLE_GAP_AUTH_KEY_TYPE_NONE, NULL);*/
+
+            error_code1 = sd_ble_gap_sec_params_reply(adapter, p_ble_evt->evt.common_evt.conn_handle,
+                /*BLE_GAP_SEC_STATUS_SUCCESS*/ BLE_GAP_SEC_STATUS_SUCCESS,
+                                        NULL, NULL);//&sec_keyset);
+            printf("Central Accepts Peripheral parameters : success, central_params:NULL, NULL, error code is %d\n", error_code1);
             break;
         // Macl add
         case BLE_GAP_EVT_KEY_PRESSED:
@@ -2422,9 +2462,9 @@ static void ble_evt_dispatch(adapter_t *adapter, ble_evt_t *p_ble_evt)
             // Macl add;
         case BLE_GAP_EVT_CONN_SEC_UPDATE:
             printf("CONN_SEC_UPDATE\n");
-            service_discovery_start(); // it will run if remote update params
-                                       // ble_enable_params
-            printf("crash?");
+             service_discovery_start(); // it will run if remote update params
+            // ble_enable_params
+            //printf("crash?");
             // service_discovery_voice();
             break;
             // Macl add
@@ -2459,26 +2499,27 @@ static void ble_evt_dispatch(adapter_t *adapter, ble_evt_t *p_ble_evt)
         case BLE_GAP_EVT_PHY_UPDATE:
             on_phy_update(&(p_ble_evt->evt.gap_evt));
             on_pair(&(p_ble_evt->evt.gap_evt));
-
-		//case BLE_GAP_EVT_DATA_LENGTH_UPDATE_REQUEST:
-  //          //sd_ble_gap_data_length_update
-  //                          ble_gap_data_length_params_t t;
-  //          ble_gap_data_length_limitation_t k;
-  //                          //sd_ble_gap_data_length_update(m_adapter, m_connection_handle, &t, &k);
-  //          sd_ble_gap_data_length_update(m_adapter, m_connection_handle, NULL, NULL);
-  //          printf("received lenght update request.\n");
-  //     case BLE_GAP_EVT_DATA_LENGTH_UPDATE:
-  //                          printf("Max rx octets: { %d }\n",
-  //                                 p_ble_evt->evt.gap_evt.params.data_length_update.effective_params
-  //                                     .max_rx_octets);
-  //         printf("Max tx octets: { %d }\n",
-  //                p_ble_evt->evt.gap_evt.params.data_length_update.effective_params.max_tx_octets);
-  //                          printf("Max rx time: { %d }\n",
-  //                                 p_ble_evt->evt.gap_evt.params.data_length_update.effective_params
-  //                                     .max_rx_time_us);
-		//				printf("Max tx time: { %d }\n",
-  //                                 p_ble_evt->evt.gap_evt.params.data_length_update.effective_params
-  //                                     .max_tx_time_us);
+            break;
+        case BLE_GAP_EVT_DATA_LENGTH_UPDATE_REQUEST:
+            // sd_ble_gap_data_length_update
+            ble_gap_data_length_params_t t;
+            ble_gap_data_length_limitation_t k;
+            // sd_ble_gap_data_length_update(m_adapter, m_connection_handle, &t, &k);
+            sd_ble_gap_data_length_update(m_adapter, m_connection_handle, NULL, NULL);
+            printf("received lenght update request.\n");
+            break;
+        case BLE_GAP_EVT_DATA_LENGTH_UPDATE:
+            printf("Max rx octets: { %d }\n",
+                   p_ble_evt->evt.gap_evt.params.data_length_update.effective_params.max_rx_octets);
+            printf("Max tx octets: { %d }\n",
+                   p_ble_evt->evt.gap_evt.params.data_length_update.effective_params.max_tx_octets);
+            printf(
+                "Max rx time: { %d }\n",
+                p_ble_evt->evt.gap_evt.params.data_length_update.effective_params.max_rx_time_us);
+            printf(
+                "Max tx time: { %d }\n",
+                p_ble_evt->evt.gap_evt.params.data_length_update.effective_params.max_tx_time_us);
+            break;
 
         case BLE_GATTC_EVT_PRIM_SRVC_DISC_RSP:
             on_service_discovery_response(&(p_ble_evt->evt.gattc_evt));
@@ -2543,7 +2584,7 @@ static void ble_evt_dispatch(adapter_t *adapter, ble_evt_t *p_ble_evt)
 int main(int argc, char *argv[])
 {
     uint32_t error_code;
-    char *serial_port  = DEFAULT_UART_PORT_NAME;    
+    char *serial_port  = DEFAULT_UART_PORT_NAME;
     uint32_t baud_rate = DEFAULT_BAUD_RATE;
     uint8_t cccd_value = 0;
 
@@ -2551,8 +2592,9 @@ int main(int argc, char *argv[])
     {
         serial_port = argv[1];
     }
-    if(argc == 3){
-        serial_port = argv[1];
+    if (argc == 3)
+    {
+        serial_port               = argv[1];
         sub_target_dev_macAddress = argv[2];
     }
 
@@ -2574,7 +2616,7 @@ int main(int argc, char *argv[])
     }
 
 #if NRF_SD_BLE_API >= 5
-    ble_cfg_set(m_config_id);
+    ble_cfg_set(m_config_id); //    (m_config_id);
 #endif
 
     error_code = ble_stack_init();
@@ -2583,6 +2625,32 @@ int main(int argc, char *argv[])
     {
         return error_code;
     }
+
+    /*ble_gap_addr_t addr_dongle;
+uint32_t err_code   = sd_ble_gap_addr_get(m_adapter, &addr_dongle);
+    addr_dongle.addr_type = 0;
+addr_dongle.addr[0]   = 10;
+addr_dongle.addr[5] = 10;
+err_code = sd_ble_gap_addr_set(m_adapter, &addr_dongle);*/
+
+    if (error_code != NRF_SUCCESS)
+    {
+        return error_code;
+    }
+    /* else{
+         sd_ble_gap_addr_get(m_adapter, &addr_dongle);
+         if (addr_dongle.addr[5] == 10){
+             printf("change mac address success.");
+             printf("Received: %2x %2x %2x %2x %2x %2x\n", addr_dongle.addr[0],
+                    addr_dongle.addr[1],
+                    addr_dongle.addr[2],
+                    addr_dongle.addr[3],
+                    addr_dongle.addr[4],
+                    addr_dongle.addr[5]);
+                         }
+                 }*/
+    // 10662417DA5D
+    // sd_ble_gap_addr_set()
 
 #if NRF_SD_BLE_API < 5
     error_code = ble_options_set();
