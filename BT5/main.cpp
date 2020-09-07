@@ -534,7 +534,8 @@ static uint32_t ble_cfg_set(uint8_t conn_cfg_tag)
     ble_cfg.gap_cfg.role_count_cfg.periph_role_count  = 0;
     ble_cfg.gap_cfg.role_count_cfg.central_role_count = 1;
     ble_cfg.gap_cfg.role_count_cfg.central_sec_count  = 1;
-    ble_cfg.common_cfg.vs_uuid_cfg.vs_uuid_count      = BLE_UUID_VS_COUNT_DEFAULT;
+    ble_cfg.common_cfg.vs_uuid_cfg.vs_uuid_count =
+        BLE_UUID_VS_COUNT_DEFAULT; // BLE_UUID_VS_COUNT_DEFAULT;
 
     error_code = sd_ble_cfg_set(m_adapter, BLE_GAP_CFG_ROLE_COUNT, &ble_cfg, ram_start);
     if (error_code != NRF_SUCCESS)
@@ -2415,20 +2416,20 @@ static void ble_evt_dispatch(adapter_t *adapter, ble_evt_t *p_ble_evt)
     switch (p_ble_evt->header.evt_id)
     { // BLE_EVT_BASE
       // Macl add
-        case BLE_EVT_BASE:
-            break;
+       /* case BLE_EVT_BASE:
+            break;*/
         case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
             ble_gap_sec_params_t sec_params;
             ble_gap_sec_keyset_t sec_keyset;
             ble_gap_enc_key_t m_own_enc_key;
             ble_gap_enc_key_t m_peer_enc_key;
 
-            sec_keyset.keys_own.p_enc_key  = NULL; //&m_own_enc_key;
+            sec_keyset.keys_own.p_enc_key  = &m_own_enc_key; //&m_own_enc_key;
             sec_keyset.keys_own.p_id_key   = NULL;
             sec_keyset.keys_own.p_pk       = NULL;
             sec_keyset.keys_own.p_sign_key = NULL;
 
-            sec_keyset.keys_peer.p_enc_key  = NULL; //&m_peer_enc_key;
+            sec_keyset.keys_peer.p_enc_key  = &m_peer_enc_key; //&m_peer_enc_key;
             sec_keyset.keys_peer.p_id_key   = NULL;
             sec_keyset.keys_peer.p_pk       = NULL;
             sec_keyset.keys_peer.p_sign_key = NULL;
@@ -2437,8 +2438,12 @@ static void ble_evt_dispatch(adapter_t *adapter, ble_evt_t *p_ble_evt)
                                                     BLE_GAP_AUTH_KEY_TYPE_NONE, NULL);*/
 
             error_code1 = sd_ble_gap_sec_params_reply(adapter, p_ble_evt->evt.common_evt.conn_handle,
-                /*BLE_GAP_SEC_STATUS_SUCCESS*/ BLE_GAP_SEC_STATUS_SUCCESS,
-                                        NULL, NULL);//&sec_keyset);
+                /*BLE_GAP_SEC_STATUS_PAIRING_NOT_SUPP*/ BLE_GAP_SEC_STATUS_SUCCESS, NULL,
+                NULL); //&sec_keyset); //&sec_keyset);
+            //error_code1 = sd_ble_gap_sec_params_reply(
+            //    adapter, p_ble_evt->evt.common_evt.conn_handle,
+            //    /*BLE_GAP_SEC_STATUS_SUCCESS*/ BLE_GAP_SEC_STATUS_SUCCESS, NULL,
+            //    &sec_keyset); //&sec_keyset);
             printf("Central Accepts Peripheral parameters : success, central_params:NULL, NULL, error code is %d\n", error_code1);
             break;
         // Macl add
@@ -2462,7 +2467,8 @@ static void ble_evt_dispatch(adapter_t *adapter, ble_evt_t *p_ble_evt)
             // Macl add;
         case BLE_GAP_EVT_CONN_SEC_UPDATE:
             printf("CONN_SEC_UPDATE\n");
-             service_discovery_start(); // it will run if remote update params
+            update_phy(&(p_ble_evt->evt.gap_evt));
+             //service_discovery_start(); // it will run if remote update params
             // ble_enable_params
             //printf("crash?");
             // service_discovery_voice();
@@ -2476,8 +2482,8 @@ static void ble_evt_dispatch(adapter_t *adapter, ble_evt_t *p_ble_evt)
             break;
         case BLE_GAP_EVT_CONNECTED:
             on_connected(&(p_ble_evt->evt.gap_evt));
-            /*on_pair(&(p_ble_evt->evt.gap_evt));*/
-            update_phy(&(p_ble_evt->evt.gap_evt));
+            on_pair(&(p_ble_evt->evt.gap_evt));
+            //update_phy(&(p_ble_evt->evt.gap_evt));
             break;
 
         case BLE_GAP_EVT_DISCONNECTED:
@@ -2497,8 +2503,10 @@ static void ble_evt_dispatch(adapter_t *adapter, ble_evt_t *p_ble_evt)
             break;
 
         case BLE_GAP_EVT_PHY_UPDATE:
+            printf("won't do!");
             on_phy_update(&(p_ble_evt->evt.gap_evt));
-            on_pair(&(p_ble_evt->evt.gap_evt));
+            //on_pair(&(p_ble_evt->evt.gap_evt));
+            service_discovery_start(); // it will run if remote update params
             break;
         case BLE_GAP_EVT_DATA_LENGTH_UPDATE_REQUEST:
             // sd_ble_gap_data_length_update
