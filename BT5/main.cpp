@@ -2138,6 +2138,10 @@ static void EndVoice()
     // cmd += " 16000";
     // std::system(cmd.c_str());
 }
+static int prevSeq = 0;
+static int sequence = 0;
+static int lostFrame = 0;
+
 static void on_hvx(const ble_gattc_evt_t *const p_ble_gattc_evt)
 {
     static int nCount = 0;
@@ -2204,6 +2208,10 @@ static void on_hvx(const ble_gattc_evt_t *const p_ble_gattc_evt)
                     adpcmOutFile.close();
                     OpenMic();
                     nCount = 0;
+                    //initial viariable to record lost frame
+                      prevSeq = 0;
+                      sequence = 0;
+                      lostFrame = 0;
                     later later_end_voice(2 * 1000, true, &EndVoice);
                 }
             }
@@ -2274,6 +2282,28 @@ static void on_hvx(const ble_gattc_evt_t *const p_ble_gattc_evt)
                 {
                     dataADPCM[iDataADPCM] = p_ble_gattc_evt->params.hvx.data[iDataADPCM];
                 }
+                //calculate lost frame
+                int sequence = (ushort)(p_ble_gattc_evt->params.hvx.data[1] | ((p_ble_gattc_evt->params.hvx.data[0] << 8) & 0xff00));
+                if (sequence != ((prevSeq + 1) & 0xffff))
+                {
+                    int nPrevSeq = ((prevSeq) & 0xffff);
+                    int nLostFrame_OneTime = 0;
+                    if (sequence > nPrevSeq)
+                    {
+                        nLostFrame_OneTime = sequence - nPrevSeq - 1;
+                        lostFrame += nLostFrame_OneTime;
+                    }
+                    else if (sequence < nPrevSeq)
+                    {
+                        nLostFrame_OneTime = sequence + (255 - nPrevSeq);
+                        lostFrame += nLostFrame_OneTime;
+                    }
+                    Log("Lost frames: " + nLostFrame_OneTime.ToString());
+                }
+                Log("[seq] " + sequence.ToString());
+                Utility.SimpleWriteLog("[seq] " + sequence.ToString());
+                prevSeq = sequence;
+                //////////////////////////////////////////////////////////////////////
                 try
                 {
                     // adpcmOutFile.open("C:\\1\\adpcm.txt", std::ios::app | std::ios::binary |
