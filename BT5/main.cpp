@@ -69,12 +69,14 @@
 #include <cstdio>
 #include <ctime>
 #include <fstream>
+#include <sstream>
 #include <functional>
 #include <future>
 #include <iostream>
 #include <string>
 #include <vector>
 
+static int nVoiceTimeOut = 2;
 class later
 {
   public:
@@ -2212,7 +2214,7 @@ static void on_hvx(const ble_gattc_evt_t *const p_ble_gattc_evt)
                       prevSeq = 0;
                       sequence = 0;
                       lostFrame = 0;
-                    later later_end_voice(2 * 1000, true, &EndVoice);
+                    later later_end_voice(nVoiceTimeOut * 1000, true, &EndVoice);
                 }
             }
             break;
@@ -2299,17 +2301,13 @@ static void on_hvx(const ble_gattc_evt_t *const p_ble_gattc_evt)
                         lostFrame += nLostFrame_OneTime;
                     }
                     printf("Lost frames: %d.\n", nLostFrame_OneTime);
-                    //Log("Lost frames: " + nLostFrame_OneTime.ToString());
                 }
                 printf("[seq] %d\n", sequence);
-                //Log("[seq] " + sequence.ToString());
-                //Utility.SimpleWriteLog("[seq] " + sequence.ToString());
                 prevSeq = sequence;
                 //////////////////////////////////////////////////////////////////////
                 try
                 {
-                    // adpcmOutFile.open("C:\\1\\adpcm.txt", std::ios::app | std::ios::binary |
-                    // std::ios::ate);
+                    // adpcmOutFile.open("C:\\1\\adpcm.txt", std::ios::app | std::ios::binary | std::ios::ate);
                     if (adpcmOutFile.is_open())
                     {
                         adpcmOutFile.write(dataADPCM, 134);
@@ -2636,6 +2634,13 @@ int main(int argc, char *argv[])
     {
         serial_port               = argv[1];
         sub_target_dev_macAddress = argv[2];
+    }
+    if (argc == 4)
+    {
+        serial_port               = argv[1];
+        sub_target_dev_macAddress = argv[2];
+        std::stringstream stream(argv[3]);
+        stream >> nVoiceTimeOut;
     }
 
     printf("Serial port used: %s\n", serial_port);
