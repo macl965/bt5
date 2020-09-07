@@ -2271,19 +2271,19 @@ static void on_hvx(const ble_gattc_evt_t *const p_ble_gattc_evt)
             break;
             case 134:
             {
-                printf("Received: %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x\n",
+                /*printf("Received: %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x\n",
                        p_ble_gattc_evt->params.hvx.data[0], p_ble_gattc_evt->params.hvx.data[1],
                        p_ble_gattc_evt->params.hvx.data[2], p_ble_gattc_evt->params.hvx.data[3],
                        p_ble_gattc_evt->params.hvx.data[4], p_ble_gattc_evt->params.hvx.data[5],
                        p_ble_gattc_evt->params.hvx.data[6], p_ble_gattc_evt->params.hvx.data[7],
-                       p_ble_gattc_evt->params.hvx.data[8], p_ble_gattc_evt->params.hvx.data[9]);
+                       p_ble_gattc_evt->params.hvx.data[8], p_ble_gattc_evt->params.hvx.data[9]);*/
                 char dataADPCM[134];
                 for (int iDataADPCM = 0; iDataADPCM < 134; iDataADPCM++)
                 {
                     dataADPCM[iDataADPCM] = p_ble_gattc_evt->params.hvx.data[iDataADPCM];
                 }
                 //calculate lost frame
-                int sequence = (ushort)(p_ble_gattc_evt->params.hvx.data[1] | ((p_ble_gattc_evt->params.hvx.data[0] << 8) & 0xff00));
+                int sequence = (p_ble_gattc_evt->params.hvx.data[1] | ((p_ble_gattc_evt->params.hvx.data[0] << 8) & 0xff00));
                 if (sequence != ((prevSeq + 1) & 0xffff))
                 {
                     int nPrevSeq = ((prevSeq) & 0xffff);
@@ -2298,10 +2298,12 @@ static void on_hvx(const ble_gattc_evt_t *const p_ble_gattc_evt)
                         nLostFrame_OneTime = sequence + (255 - nPrevSeq);
                         lostFrame += nLostFrame_OneTime;
                     }
-                    Log("Lost frames: " + nLostFrame_OneTime.ToString());
+                    printf("Lost frames: %d.\n", nLostFrame_OneTime);
+                    //Log("Lost frames: " + nLostFrame_OneTime.ToString());
                 }
-                Log("[seq] " + sequence.ToString());
-                Utility.SimpleWriteLog("[seq] " + sequence.ToString());
+                printf("[seq] %d\n", sequence);
+                //Log("[seq] " + sequence.ToString());
+                //Utility.SimpleWriteLog("[seq] " + sequence.ToString());
                 prevSeq = sequence;
                 //////////////////////////////////////////////////////////////////////
                 try
